@@ -41,6 +41,8 @@ object Constants {
   val ParamExecutors = AppParam("max-executors", "Maximum number of executors to use in simulations")
   val ParamRegion = AppParam("region", "AWS Region to lookup for costs (e.g. us-east-1)")
   val ParamSpot = AppParam("spot", "Specify spot discount when computing ec2 costs (e.g. 0.7)")
+  val ParamOutputPrefix = AppParam("output_prefix", "Amazon S3 location to persist HTML reports (e.g. prefix1/prefix2")
+  val ParamReportName = AppParam("report_name", "Name under which to save report (e.g. myReport.html)")
 
   val SparkConfigurationWarning =
     s"""Please note that by default the tool try to find an "acceptable" number of Spark executors trying not to
