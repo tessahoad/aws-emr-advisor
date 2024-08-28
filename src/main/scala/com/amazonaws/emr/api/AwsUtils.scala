@@ -3,7 +3,7 @@ package com.amazonaws.emr.api
 import com.amazonaws.auth.{AWSCredentialsProviderChain, DefaultAWSCredentialsProviderChain}
 import com.amazonaws.emr.Config.S3PreSignedUrlValidity
 import org.apache.spark.internal.Logging
-import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider
+import software.amazon.awssdk.auth.credentials.{DefaultCredentialsProvider, InstanceProfileCredentialsProvider, ProfileCredentialsProvider}
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.{GetObjectRequest, PutObjectRequest, S3Exception}
@@ -23,7 +23,7 @@ object AwsUtils extends Logging {
    * @param objectPath file path on the local filesystem
    */
   def putS3Object(bucketName: String, objectKey: String, objectPath: String): Unit = {
-    val credentialsProvider = ProfileCredentialsProvider.create
+    val credentialsProvider = InstanceProfileCredentialsProvider.create
     val client = S3Client.builder.credentialsProvider(credentialsProvider).build
 
     try {
@@ -43,7 +43,7 @@ object AwsUtils extends Logging {
    * @return pre-signed url string
    */
   def getS3ObjectPreSigned(bucketName: String, objectKey: String, validity: Int = S3PreSignedUrlValidity): String = {
-    val credentialsProvider = ProfileCredentialsProvider.create
+    val credentialsProvider = InstanceProfileCredentialsProvider.create
     try {
       val getOb = GetObjectRequest.builder.bucket(bucketName).key(objectKey).build
       val getPresReq = GetObjectPresignRequest.builder

@@ -3,12 +3,12 @@ package com.amazonaws.emr.report
 import com.amazonaws.emr.api.AwsUtils
 import com.amazonaws.emr.report.spark._
 import com.amazonaws.emr.spark.models.AppContext
-import com.amazonaws.emr.utils.Constants.ParamBucket
+import com.amazonaws.emr.utils.Constants.{ParamBucket, ParamOutputPrefix, ParamReportName}
 import com.amazonaws.emr.utils.Formatter.humanReadableBytes
 import org.apache.spark.internal.Logging
 
 import java.io._
-import java.nio.file.{Files, Paths}
+import java.nio.file.{FileAlreadyExistsException, Files, Paths}
 
 object HtmlReport extends Logging {
 
@@ -24,9 +24,11 @@ object HtmlReport extends Logging {
     // store html report on amazon s3
     val s3BucketName = options.getOrElse(ParamBucket.name, "")
     val finalPath = if (s3BucketName.nonEmpty) {
-      logInfo(s"Saving html report in s3://$s3BucketName/emr-insights/$htmlFileName")
-      AwsUtils.putS3Object(s3BucketName, s"emr-insights/$htmlFileName", htmlReportPath)
-      AwsUtils.getS3ObjectPreSigned(s3BucketName, s"emr-insights/$htmlFileName")
+      val prefix = options.getOrElse(ParamOutputPrefix.name, "emr-insights")
+      val reportName = options.getOrElse(s"${ParamReportName.name}.html", htmlFileName)
+      logInfo(s"Saving html report in s3://$s3BucketName/$prefix/$reportName")
+      AwsUtils.putS3Object(s3BucketName, s"$prefix/$reportName", htmlReportPath)
+      AwsUtils.getS3ObjectPreSigned(s3BucketName, s"$prefix/$reportName")
     } else s"file://$htmlReportPath"
 
     logInfo(
@@ -45,7 +47,11 @@ object HtmlReport extends Logging {
    * @param path       location on the local filesystem to store the report
    */
   private def generate(appContext: AppContext, path: String): Unit = {
-    Files.createDirectories(Paths.get(path).getParent.toAbsolutePath)
+    try {
+      Files.createDirectories(Paths.get(path).getParent.toAbsolutePath)
+    } catch {
+      case x: FileAlreadyExistsException => logWarning(s"File already exists ${Paths.get(path).getParent.toAbsolutePath}")
+    }
     val pw = new PrintWriter(new File(path))
     createHtmlReport(appContext, pw)
     pw.close()

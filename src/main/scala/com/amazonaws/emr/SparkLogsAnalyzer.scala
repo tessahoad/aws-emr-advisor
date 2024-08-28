@@ -9,7 +9,7 @@ import scala.sys.exit
 
 object SparkLogsAnalyzer extends App {
 
-  private val optParams = List(ParamBucket, ParamDuration, ParamExecutors, ParamRegion, ParamSpot)
+  private val optParams = List(ParamBucket, ParamDuration, ParamExecutors, ParamRegion, ParamSpot, ParamOutputPrefix, ParamReportName)
   private val appParams = (ParamJar :: optParams) :+ ParamLogs
   private val usage =
     s"""
